@@ -11,7 +11,7 @@ def barcoords(x, y, x0, y0, x1, y1, x2, y2):
     return lam0, lam1, lam2
 
 
-def draw_triangle(pixels, x0, y0, x1, y1, x2, y2, color):
+def draw_triangle(pixels, x0, y0, x1, y1, x2, y2, z0, z1, z2, zbuffer, color):
     xmin = int(min(x0, x1, x2))
     xmin = 0 if xmin < 0 else int(min(x0, x1, x2))
     xmax = int(max(x0, x1, x2) + 1.0) if int(max(x0, x1, x2) + 1.0) <= 1000 else 0
@@ -21,14 +21,19 @@ def draw_triangle(pixels, x0, y0, x1, y1, x2, y2, color):
         for y in range(ymin, ymax):
             lam0, lam1, lam2 = barcoords(x, y, x0, y0, x1, y1, x2, y2)
             if 0 <= lam0 and 0 <= lam1 and 0 <= lam2:
-                pixels[y, x] = color
+                z_ish = z0 * lam0 + z1 * lam1 + z2 * lam2
+                if z_ish < zbuffer[x, y]:
+                    pixels[y, x] = color
+                    zbuffer[x, y] = z_ish
+
+
+
 
 def norma(x0, y0, z0, x1, y1, z1, x2, y2, z2):
     A = np.array([x1 - x2, y1 - y2, z1 - z2])
     B = np.array([x1 - x0, y1 - y0, z1 - z0])
     norma = np.cross(A, B)
     return norma
-
 
 def pr(n, l):
     proz = np.dot(n, l) / (np.linalg.norm(n) * np.linalg.norm(l))
@@ -71,6 +76,7 @@ obj_image_matrix = np.full((1000, 1000, 3), 255, dtype=np.uint8)
 image = Image.fromarray(obj_image_matrix, 'RGB')
 pixels = image.load()
 l = np.array([0, 0, 1])
+zbuffer = np.full((1000, 1000), np.inf)
 
 
 for i in range(0, len(poly)):
@@ -91,11 +97,11 @@ for i in range(0, len(poly)):
     n = norma(x0, y0, z0, x1, y1, z1, x2, y2, z2)
     fl = pr(n, l)
     col1 = 0
-    col2 = int(-200 * fl)
+    col2 = int(-150 * fl)
     col3 = col2
     color = (col1, col2, col3)
     if fl < 0:
-        draw_triangle(pixels, x0, y0, x1, y1, x2, y2, color)
+        draw_triangle(pixels, x0, y0, x1, y1, x2, y2, z0, z1, z2, zbuffer, color)
 
 image = image.rotate(90)
 image.show()
