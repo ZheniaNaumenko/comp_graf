@@ -24,6 +24,12 @@ def draw_triangle(pixels, x0, y0, x1, y1, x2, y2, color):
                 pixels[y, x] = color
 
 
+def norma(x0, y0, z0, x1, y1, z1, x2, y2, z2):
+    A = np.array([x1 - x2, y1 - y2, z1 - z2])
+    B = np.array([x1 - x0, y1 - y0, z1 - z0])
+    norma = np.cross(A, B)
+    return norma
+
 def open_v(obj):
     vertices_v = []
     with open(obj, 'r') as file:
@@ -62,17 +68,10 @@ image = Image.fromarray(obj_image_matrix, 'RGB')
 pixels = image.load()
 
 
-for i in range(1, len(poly)):
 
-    x0 = v[int(x[i][0]) - 1][0] * 5000 + 400
-    x1 = v[int(x[i][1]) - 1][0] * 5000 + 400
-    x2 = v[int(x[i][2]) - 1][0] * 5000 + 400
-
-    y0 = v[int(x[i][0]) - 1][1] * 5000 + 400
-    y1 = v[int(x[i][1]) - 1][1] * 5000 + 400
-    y2 = v[int(x[i][2]) - 1][1] * 5000 + 400
 
 for i in range(0, len(poly)):
+
     x0 = v[int(x[i][0]) - 1][0] * 5000 + 400
     x1 = v[int(x[i][1]) - 1][0] * 5000 + 400
     x2 = v[int(x[i][2]) - 1][0] * 5000 + 400
@@ -80,8 +79,13 @@ for i in range(0, len(poly)):
     y0 = v[int(x[i][0]) - 1][1] * 5000 + 400
     y1 = v[int(x[i][1]) - 1][1] * 5000 + 400
     y2 = v[int(x[i][2]) - 1][1] * 5000 + 400
+
+    z0 = v[int(x[i][0]) - 1][2] * 5000 + 400
+    z1 = v[int(x[i][1]) - 1][2] * 5000 + 400
+    z2 = v[int(x[i][2]) - 1][2] * 5000 + 400
+
     rand = random.randint(0, 255)
-    color = (rand, 0, rand)
+    color = (0, rand, rand)
     draw_triangle(pixels, x0, y0, x1, y1, x2, y2, color)
 
 image = image.rotate(90)
