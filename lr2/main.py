@@ -23,12 +23,16 @@ def draw_triangle(pixels, x0, y0, x1, y1, x2, y2, color):
             if 0 <= lam0 and 0 <= lam1 and 0 <= lam2:
                 pixels[y, x] = color
 
-
 def norma(x0, y0, z0, x1, y1, z1, x2, y2, z2):
     A = np.array([x1 - x2, y1 - y2, z1 - z2])
     B = np.array([x1 - x0, y1 - y0, z1 - z0])
     norma = np.cross(A, B)
     return norma
+
+
+def pr(n, l):
+    proz = np.dot(n, l) / (np.linalg.norm(n) * np.linalg.norm(l))
+    return proz
 
 def open_v(obj):
     vertices_v = []
@@ -66,8 +70,7 @@ v = open_v("model_1.obj")
 obj_image_matrix = np.full((1000, 1000, 3), 255, dtype=np.uint8)
 image = Image.fromarray(obj_image_matrix, 'RGB')
 pixels = image.load()
-
-
+l = np.array([0, 0, 1])
 
 
 for i in range(0, len(poly)):
@@ -85,8 +88,14 @@ for i in range(0, len(poly)):
     z2 = v[int(x[i][2]) - 1][2] * 5000 + 400
 
     rand = random.randint(0, 255)
-    color = (0, rand, rand)
-    draw_triangle(pixels, x0, y0, x1, y1, x2, y2, color)
+    n = norma(x0, y0, z0, x1, y1, z1, x2, y2, z2)
+    fl = pr(n, l)
+    col1 = 0
+    col2 = int(-200 * fl)
+    col3 = col2
+    color = (col1, col2, col3)
+    if fl < 0:
+        draw_triangle(pixels, x0, y0, x1, y1, x2, y2, color)
 
 image = image.rotate(90)
 image.show()
