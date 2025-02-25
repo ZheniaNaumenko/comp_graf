@@ -33,7 +33,6 @@ def open_v(obj):
                 vertices_v.append(vertex)
     return np.array(vertices_v)
 
-
 def open_poly(obj):
     p = []
     with open(obj, 'r') as file:
@@ -42,7 +41,6 @@ def open_poly(obj):
                 n = [x.split(' ') for x in line.split()[1:]]
                 p.append(n)
     return np.array(p)
-
 
 def number_verc(poly):
     x, n = [], []
@@ -56,7 +54,6 @@ def number_verc(poly):
         x.append([x1, x2, x3])
     return x
 
-
 poly = open_poly("model_1.obj")
 x = number_verc(poly)
 v = open_v("model_1.obj")
@@ -64,7 +61,9 @@ obj_image_matrix = np.full((1000, 1000, 3), 255, dtype=np.uint8)
 image = Image.fromarray(obj_image_matrix, 'RGB')
 pixels = image.load()
 
+
 for i in range(1, len(poly)):
+
     x0 = v[int(x[i][0]) - 1][0] * 5000 + 400
     x1 = v[int(x[i][1]) - 1][0] * 5000 + 400
     x2 = v[int(x[i][2]) - 1][0] * 5000 + 400
@@ -73,15 +72,17 @@ for i in range(1, len(poly)):
     y1 = v[int(x[i][1]) - 1][1] * 5000 + 400
     y2 = v[int(x[i][2]) - 1][1] * 5000 + 400
 
-for i in range(1, 4):
-    x0 = random.randint(-100, 1000)
-    y0 = random.randint(-100, 1000)
-    x1 = random.randint(-100, 1000)
-    y1 = random.randint(-100, 1000)
-    x2 = random.randint(-100, 1000)
-    y2 = random.randint(-100, 1000)
+for i in range(0, len(poly)):
+    x0 = v[int(x[i][0]) - 1][0] * 5000 + 400
+    x1 = v[int(x[i][1]) - 1][0] * 5000 + 400
+    x2 = v[int(x[i][2]) - 1][0] * 5000 + 400
+
+    y0 = v[int(x[i][0]) - 1][1] * 5000 + 400
+    y1 = v[int(x[i][1]) - 1][1] * 5000 + 400
+    y2 = v[int(x[i][2]) - 1][1] * 5000 + 400
     rand = random.randint(0, 255)
-    color = (rand, rand, rand)
+    color = (rand, 0, rand)
     draw_triangle(pixels, x0, y0, x1, y1, x2, y2, color)
 
+image = image.rotate(90)
 image.show()
