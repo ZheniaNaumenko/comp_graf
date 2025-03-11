@@ -1,5 +1,8 @@
+from operator import matmul
+
 import numpy as np
 from PIL import Image, ImageOps
+import math
 import random
 
 
@@ -40,58 +43,87 @@ def pr(n, l):
     return proz
 
 def open_v(obj):
-    vertices_v = []
+    vertices = []
     with open(obj, 'r') as file:
         for line in file:
             if line.startswith('v '):
-                vertex = np.array(list(map(float, line.split()[1:])))
-                vertices_v.append(vertex)
-    return np.array(vertices_v)
+                vertex = [float(x) for x in line.split(' ')[1:]]
+                vertices.append(vertex)
+    return vertices
+
 
 def open_poly(obj):
-    p = []
+    poly = []
     with open(obj, 'r') as file:
         for line in file:
             if line.startswith('f '):
-                n = [x.split(' ') for x in line.split()[1:]]
-                p.append(n)
-    return np.array(p)
+                polygon = line.split(' ')[1:]
+                p = [[int(x) for x in i.split('/')] for i in polygon]
+                poly.append(p)
+    return poly
+
 
 def number_verc(poly):
-    x, n = [], []
-    for i in range(len(poly)):
-        xyz1 = [x.split('/') for x in poly[i][0]]
-        x1 = xyz1[0][0]
-        xyz2 = [x.split('/') for x in poly[i][1]]
-        x2 = xyz2[0][0]
-        xyz3 = [x.split('/') for x in poly[i][2]]
-        x3 = xyz3[0][0]
-        x.append([x1, x2, x3])
-    return x
+    v = []
+    for i in range(0, len(poly)):
+        n = [poly[i][0][0], poly[i][1][0], poly[i][2][0]]
+        v.append(n)
+    return v
+
+def r_calc(a, b, c):
+    alpha = np.radians(a)
+    beta = np.radians(b)
+    gamma = np.radians(c)
+
+    R_x = np.array([
+        [1, 0, 0],
+        [0, np.cos(alpha), np.sin(alpha)],
+        [0, -np.sin(alpha), np.cos(alpha)]
+    ])
+
+    R_y = np.array([
+        [np.cos(beta), 0, np.sin(beta)],
+        [0, 1, 0],
+        [-np.sin(beta), 0, np.cos(beta)]
+    ])
+
+    R_z = np.array([
+        [np.cos(gamma), np.sin(gamma), 0],
+        [-np.sin(gamma), np.cos(gamma), 0],
+        [0, 0, 1]
+    ])
+
+    r = R_z @ R_y @ R_x
+    return r
 
 poly = open_poly("model_1.obj")
-x = number_verc(poly)
+num = number_verc(poly)
 v = open_v("model_1.obj")
 obj_image_matrix = np.full((1000, 1000, 3), 255, dtype=np.uint8)
 image = Image.fromarray(obj_image_matrix, 'RGB')
 pixels = image.load()
 l = np.array([0, 0, 1])
 zbuffer = np.full((1000, 1000), np.inf)
+r = r_calc(0, 180, 0)
+t = np.array([0.0, -0.04, 0.0])
 
+
+for i in range(0, len(v)):
+    v[i] = r @ v[i] + t
 
 for i in range(0, len(poly)):
 
-    x0 = v[int(x[i][0]) - 1][0] * 5000 + 400
-    x1 = v[int(x[i][1]) - 1][0] * 5000 + 400
-    x2 = v[int(x[i][2]) - 1][0] * 5000 + 400
+    x0 = v[num[i][0] - 1][0] *5000 + 500
+    x1 = v[num[i][1] - 1][0]*5000 + 500
+    x2 = v[num[i][2] - 1][0]*5000 + 500
 
-    y0 = v[int(x[i][0]) - 1][1] * 5000 + 400
-    y1 = v[int(x[i][1]) - 1][1] * 5000 + 400
-    y2 = v[int(x[i][2]) - 1][1] * 5000 + 400
+    y0 = v[num[i][0] - 1][1]*5000 + 500
+    y1 = v[num[i][1] - 1][1]*5000 + 500
+    y2 = v[num[i][2] - 1][1]*5000 + 500
 
-    z0 = v[int(x[i][0]) - 1][2] * 5000 + 400
-    z1 = v[int(x[i][1]) - 1][2] * 5000 + 400
-    z2 = v[int(x[i][2]) - 1][2] * 5000 + 400
+    z0 = v[num[i][0] - 1][2]*5000 + 500
+    z1 = v[num[i][1] - 1][2]*5000 + 500
+    z2 = v[num[i][2] - 1][2]*5000 + 500
 
     rand = random.randint(0, 255)
     n = norma(x0, y0, z0, x1, y1, z1, x2, y2, z2)
@@ -102,6 +134,7 @@ for i in range(0, len(poly)):
     color = (col1, col2, col3)
     if fl < 0:
         draw_triangle(pixels, x0, y0, x1, y1, x2, y2, z0, z1, z2, zbuffer, color)
+
 
 image = image.rotate(90)
 image.show()
